@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas Interactivo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-list-check"></i> Mis Tareas</h1>
+            <p class="subtitle">Organiza tus actividades diarias de forma sencilla</p>
+        </header>
+
+        <section class="input-section">
+            <form id="todo-form">
+                <input type="text" id="task-input" placeholder="Añadir una nueva tarea..." required autocomplete="off">
+                <select id="priority-select">
+                    <option value="baja">Prioridad Baja</option>
+                    <option value="media" selected>Prioridad Media</option>
+                    <option value="alta">Prioridad Alta</option>
+                </select>
+                <button type="submit" id="add-btn"><i class="fa-solid fa-plus"></i> Añadir</button>
+            </form>
+        </section>
+
+        <section class="filter-section">
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Todas</button>
+                <button class="filter-btn" data-filter="pending">Pendientes</button>
+                <button class="filter-btn" data-filter="completed">Completadas</button>
+            </div>
+            <div class="stats">
+                <span id="task-counter">0 tareas pendientes</span>
+            </div>
+        </section>
+
+        <main>
+            <ul id="task-list" class="task-list">
+                <!-- Las tareas se generarán dinámicamente -->
+            </ul>
+            <div id="empty-state" class="empty-state">
+                <i class="fa-regular fa-clipboard"></i>
+                <p>No hay tareas registradas. ¡Añade una para empezar!</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
