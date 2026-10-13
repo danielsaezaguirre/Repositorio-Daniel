@@ -6,14 +6,19 @@
 }
 
 body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    margin: 0;
+    padding: 20px;
     color: #f8fafc;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    
+    /* Degradado fluido moderno */
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+    background-attachment: fixed;
 }
+
 
 .container {
     background-color: #1e293b;
