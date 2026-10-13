@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tareas Interactivo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #071d2d;
+            --bg-panel: rgba(19, 37, 53, 0.9);
+            --bg-panel-2: rgba(25, 46, 65, 0.9);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #eaf3ff;
+            --muted: #9cb4c9;
+            --primary: #4bb5ff;
+            --primary-dark: #0a88d9;
+            --warning: #f5b546;
+            --success: #3cc98b;
+            --danger: #ff6b6b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #0c1f2d 0%, #142b3d 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+        }
+
+        .container {
+            width: min(92vw, 620px);
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            padding: 26px 26px 18px;
+            backdrop-filter: blur(8px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: clamp(1.8rem, 3vw, 2.3rem);
+            color: #50c0ff;
+            letter-spacing: 0.02em;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 0.96rem;
+            font-weight: 500;
+        }
+
+        .input-section {
+            margin-bottom: 18px;
+        }
+
+        #todo-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(120px, 0.7fr) 130px;
+            gap: 12px 14px;
+            align-items: end;
+        }
+
+        #task-input,
+        #task-duration,
+        #priority-select,
+        #add-btn {
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        #task-input {
+            grid-column: 1 / 2;
+            padding: 0 16px;
+            min-width: 0;
+            width: 100%;
+        }
+
+        #task-input::placeholder {
+            color: #8ea9bf;
+        }
+
+        #task-input:focus,
+        #task-duration:focus,
+        #priority-select:focus {
+            outline: 2px solid rgba(75, 181, 255, 0.45);
+            border-color: rgba(75, 181, 255, 0.7);
+            box-shadow: 0 0 0 3px rgba(75, 181, 255, 0.12);
+        }
+
+        #task-duration-wrap,
+        #priority-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        #task-duration-wrap label,
+        #priority-wrap label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-weight: 600;
+            margin-left: 2px;
+        }
+
+        #task-duration {
+            width: 100%;
+            padding: 0 12px;
+        }
+
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+
+        .priority-trigger {
+            width: 100%;
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
+            padding: 0 42px 0 12px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .priority-trigger:focus,
+        .custom-select.open .priority-trigger {
+            outline: 2px solid rgba(75, 181, 255, 0.45);
+            border-color: rgba(75, 181, 255, 0.7);
+            box-shadow: 0 0 0 3px rgba(75, 181, 255, 0.12);
+        }
+
+        .priority-trigger i {
+            color: var(--muted);
+            font-size: 0.82rem;
+            transition: transform 0.2s ease;
+        }
+
+        .custom-select.open .priority-trigger i {
+            transform: rotate(180deg);
+        }
+
+        .priority-options {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 8px;
+            list-style: none;
+            background: rgba(15, 33, 45, 0.98);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 18px 28px rgba(2, 12, 20, 0.45);
+            display: none;
+            z-index: 30;
+        }
+
+        .custom-select.open .priority-options {
+            display: block;
+        }
+
+        .priority-option {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text);
+            transition: background 0.15s ease;
+        }
+
+        .priority-option:hover,
+        .priority-option.selected {
+            background: rgba(75, 181, 255, 0.15);
+        }
+
+        #add-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 10px 18px rgba(51, 146, 214, 0.35);
+        }
+
+        #add-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .filter-section {
+            margin-bottom: 14px;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .filter-btn {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: rgba(75, 181, 255, 0.12);
+            border-color: rgba(75, 181, 255, 0.4);
+            color: #dff3ff;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: flex-end;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .task-item label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+            color: var(--text);
+        }
+
+        .task-item input[type="checkbox"] {
+            accent-color: var(--success);
+            width: 18px;
+            height: 18px;
+        }
+
+        .task-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .priority-badge,
+        .task-countdown {
+            font-size: 0.72rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+
+        .priority-badge[data-priority="baja"] {
+            background: rgba(60, 201, 139, 0.15);
+            color: #72efba;
+        }
+
+        .priority-badge[data-priority="media"] {
+            background: rgba(245, 181, 70, 0.15);
+            color: #ffd86b;
+        }
+
+        .priority-badge[data-priority="alta"] {
+            background: rgba(255, 107, 107, 0.15);
+            color: #ff9a9a;
+        }
+
+        .task-countdown {
+            background: rgba(75, 181, 255, 0.12);
+            color: #cfeeff;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            opacity: 0.75;
+        }
+
+        .empty-state {
+            display: none;
+            text-align: center;
+            padding: 20px 10px 8px;
+            color: var(--muted);
+        }
+
+        .empty-state.show {
+            display: block;
+        }
+
+        @media (max-width: 560px) {
+            .container {
+                padding: 20px 16px 14px;
+            }
+
+            #todo-form {
+                grid-template-columns: 1fr;
+            }
+
+            #task-input,
+            #task-duration,
+            #priority-select,
+            #add-btn {
+                width: 100%;
+            }
+
+            #add-btn {
+                height: 50px;
+            }
+
+            .stats {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fa-solid fa-list-check"></i> Mis Tareas</h1>
+            <p class="subtitle">Organiza tus actividades diarias de forma sencilla</p>
+        </header>
+
+        <section class="input-section">
+            <form id="todo-form">
+                <input type="text" id="task-input" placeholder="Añadir una nueva tarea..." required autocomplete="off">
+
+                <div id="task-duration-wrap">
+                    <label for="task-duration">Tiempo para completar (minutos)</label>
+                    <input type="number" id="task-duration" min="1" value="25" required>
+                </div>
+
+                <div id="priority-wrap">
+                    <label>Prioridad</label>
+                    <div class="custom-select" id="priority-custom">
+                        <button type="button" class="priority-trigger" id="priority-trigger" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="priority-selected">Prioridad Media</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <ul class="priority-options" role="listbox" aria-label="Selecciona la prioridad">
+                            <li class="priority-option" data-value="baja" data-label="Prioridad Baja" role="option" aria-selected="false">Prioridad Baja</li>
+                            <li class="priority-option selected" data-value="media" data-label="Prioridad Media" role="option" aria-selected="true">Prioridad Media</li>
+                            <li class="priority-option" data-value="alta" data-label="Prioridad Alta" role="option" aria-selected="false">Prioridad Alta</li>
+                        </ul>
+                    </div>
+                    <input type="hidden" id="priority-input" name="priority" value="media">
+                </div>
+
+                <button type="submit" id="add-btn"><i class="fa-solid fa-plus"></i> Añadir</button>
+            </form>
+        </section>
+
+        <section class="filter-section">
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Todas</button>
+                <button class="filter-btn" data-filter="pending">Pendientes</button>
+                <button class="filter-btn" data-filter="completed">Completadas</button>
+                <button class="filter-btn" data-filter="expired">Caducadas</button>
+            </div>
+            <div class="stats">
+                <span id="task-counter">0 tareas pendientes</span>
+            </div>
+        </section>
+
+        <main>
+            <ul id="task-list" class="task-list">
+                <!-- Las tareas se generarán dinámicamente -->
+            </ul>
+            <div id="empty-state" class="empty-state">
+                <i class="fa-regular fa-clipboard"></i>
+                <p>No hay tareas registradas. ¡Añade una para empezar!</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        (() => {
+            const form = document.getElementById('todo-form');
+            const list = document.getElementById('task-list');
+            const customSelect = document.getElementById('priority-custom');
+            const trigger = document.getElementById('priority-trigger');
+            const selectedText = document.getElementById('priority-selected');
+            const hiddenPriority = document.getElementById('priority-input');
+            const priorityOptions = [...document.querySelectorAll('.priority-option')];
+            let durationForNextTask = null;
+
+            function setPriority(value, label) {
+                hiddenPriority.value = value;
+                selectedText.textContent = label;
+
+                priorityOptions.forEach(option => {
+                    const isSelected = option.dataset.value === value;
+                    option.classList.toggle('selected', isSelected);
+                    option.setAttribute('aria-selected', String(isSelected));
+                });
+            }
+
+            trigger.addEventListener('click', () => {
+                const isOpen = customSelect.classList.toggle('open');
+                trigger.setAttribute('aria-expanded', String(isOpen));
+            });
+
+            priorityOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    setPriority(option.dataset.value, option.dataset.label);
+                    customSelect.classList.remove('open');
+                    trigger.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            document.addEventListener('click', event => {
+                if (!customSelect.contains(event.target)) {
+                    customSelect.classList.remove('open');
+                    trigger.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            form.addEventListener('submit', () => {
+                const minutes = Number(document.getElementById('task-duration').value);
+                durationForNextTask = Number.isFinite(minutes) && minutes > 0 ? minutes * 60 : 25 * 60;
+            }, true);
+
+            function beginCountdown(task) {
+                if (!durationForNextTask || task.dataset.countdownStarted) return;
+                task.dataset.countdownStarted = 'true';
+                const deadline = Date.now() + durationForNextTask * 1000;
+                durationForNextTask = null;
+
+                const display = document.createElement('span');
+                display.className = 'task-countdown';
+                display.setAttribute('role', 'timer');
+                display.style.marginLeft = '0.75rem';
+                task.appendChild(display);
+
+                const tick = () => {
+                    const checkbox = task.querySelector('input[type="checkbox"]');
+                    const completed = task.classList.contains('completed') ||
+                        task.classList.contains('done') || (checkbox && checkbox.checked);
+                    if (completed) {
+                        display.textContent = 'Completada';
+                        clearInterval(interval);
+                        return;
+                    }
+
+                    const secondsLeft = Math.ceil((deadline - Date.now()) / 1000);
+                    if (secondsLeft <= 0) {
+                        display.textContent = 'Caducada';
+                        task.classList.add('expired');
+                        task.dataset.status = 'expired';
+                        task.setAttribute('data-expired', 'true');
+                        clearInterval(interval);
+                        return;
+                    }
+                    display.textContent = `Tiempo restante: ${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, '0')}`;
+                };
+
+                tick();
+                const interval = setInterval(tick, 1000);
+            }
+
+            new MutationObserver(records => {
+                records.forEach(record => record.addedNodes.forEach(node => {
+                    if (node.nodeType !== Node.ELEMENT_NODE) return;
+                    if (node.matches('li')) beginCountdown(node);
+                    node.querySelectorAll('li').forEach(beginCountdown);
+                }));
+            }).observe(list, { childList: true, subtree: true });
+        })();
+    </script>
+</body>
+</html>
